@@ -1,0 +1,127 @@
+# Beacon
+
+Beacon turns valuable LLM explorations into structured inquiry objects that can be saved, matched, and routed to the right people.
+
+## What Beacon Is
+
+Beacon is a social layer for live inquiry in the LLM era.
+
+Instead of losing high-value thoughts inside private chat threads, Beacon lets users:
+- capture an exploration from an LLM session (`@Beacon this`)
+- save it as a structured Beacon
+- optionally open it to matching
+- discover adjacent or complementary Beacons
+- request intros
+
+## MVP Scope
+
+Current MVP focus:
+- capture from LLM context through MCP
+- draft review/edit before publish
+- private-by-default Beacon storage
+- per-Beacon matching toggle
+- embedding + pgvector candidate retrieval
+- simple intro request data flow
+
+Out of scope for now:
+- social feed
+- full messaging UX
+- complex privacy matrix
+
+## Monorepo Structure
+
+- `apps/web`: Next.js app (product UI + API routes)
+- `apps/mcp`: MCP-compatible service for `@Beacon this`
+- `packages/core`: shared domain types and API schemas
+- `packages/db`: Drizzle schema and SQL migrations
+- `packages/ai`: draft extraction + matching helpers
+- `docs/`: architecture and foundation docs
+
+## Tech Stack
+
+- Next.js 15 + TypeScript
+- Auth.js (NextAuth v5) with Google + email magic links
+- Postgres + pgvector
+- Drizzle ORM
+- OpenAI embeddings (configurable model)
+- Docker Compose for local DB
+
+## Local Development
+
+### 1. Install
+
+```bash
+npm install
+```
+
+### 2. Configure env
+
+Copy `.env.example` to `.env` and fill required values.
+
+Minimum practical local set:
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `AUTH_EMAIL_SERVER`
+- `AUTH_EMAIL_FROM`
+- `BEACON_API_TOKEN`
+- `OPENAI_API_KEY`
+
+### 3. Start Postgres
+
+```bash
+npm run db:up
+```
+
+### 4. Run migrations
+
+```bash
+npm run db:migrate
+```
+
+### 5. Start apps
+
+```bash
+npm run dev:web
+npm run dev:mcp
+```
+
+## `@Beacon this` Flow (Implemented)
+
+1. MCP client calls `POST /tools/create_beacon_from_context` on `apps/mcp`.
+2. MCP forwards context to web `POST /api/mcp/drafts` with `BEACON_API_TOKEN`.
+3. Web persists a Beacon draft (`status='draft'`, `sourceType='mcp'`).
+4. Response includes a `reviewUrl` (`/beacons/:id/review`).
+5. User reviews, edits, and either:
+   - saves draft
+   - publishes Beacon (`status='saved'`, optional matching)
+   - discards draft (`status='archived'`)
+
+## Production Env Validation
+
+Run this before production deploy:
+
+```bash
+npm run env:check:prod
+```
+
+This checks required production env vars for:
+- Auth (Google + SMTP + secret)
+- MCP token wiring
+- OpenAI embedding config
+- DB/app URLs
+
+## Quality Gates
+
+```bash
+npm run typecheck
+npm run build
+```
+
+## Product Docs
+
+- Manifesto: [`manifesto.md`](./manifesto.md)
+- MVP spec: [`mvp_spec.md`](./mvp_spec.md)
+- Architecture: [`architecture.md`](./architecture.md)
+- Foundation notes: [`docs/foundation.md`](./docs/foundation.md)

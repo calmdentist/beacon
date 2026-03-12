@@ -24,8 +24,7 @@ export const mcpCreateDraftRequestSchema = z.object({
   title: z.string().optional(),
   summary: z.string().optional(),
   conversationContext: z.string().min(1),
-  sourceLlm: z.string().optional(),
-  userId: z.string()
+  sourceLlm: z.string().optional()
 });
 
 export const mcpCreateDraftResponseSchema = beaconDraftSchema;

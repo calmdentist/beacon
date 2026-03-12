@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@beacon/core": "0.1.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "express": "^4.21.2",
+    "jose": "^6.2.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {

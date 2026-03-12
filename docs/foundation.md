@@ -18,7 +18,7 @@ This repository now includes a practical scaffold for the architecture in `archi
 - Web auth uses Neon Auth (`@neondatabase/auth`) with Google + email OTP through the Neon auth UI
 - App-level user records are synchronized into Beacon's `users` table on authenticated requests
 - Match generation degrades gracefully when `OPENAI_API_KEY` is missing in non-production environments
-- MCP service uses HTTP endpoint contract and is ready for full MCP transport integration
+- MCP service exposes a real MCP Streamable HTTP endpoint at `/mcp`
 - Production env validation is available via `npm run env:check:prod`
 
 ## Suggested next implementation sequence
@@ -26,4 +26,4 @@ This repository now includes a practical scaffold for the architecture in `archi
 1. Move match refresh to background jobs (Inngest) for better write-path latency
 2. Add intro notifications (Resend)
 3. Add protected admin route with match regeneration controls
-4. Add MCP transport auth hardening + per-user token management UI
+4. Add MCP OAuth provider integration hardening + per-user token management UI

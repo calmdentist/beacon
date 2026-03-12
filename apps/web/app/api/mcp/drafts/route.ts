@@ -22,6 +22,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userId = request.headers.get('x-beacon-user-id')?.trim();
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing x-beacon-user-id header' }, { status: 400 });
+    }
+
     const body = await request.json();
     const payload = mcpCreateDraftRequestSchema.parse(body);
 
@@ -29,16 +34,16 @@ export async function POST(request: Request) {
     const [user] = await db
       .select({ id: schema.users.id })
       .from(schema.users)
-      .where(eq(schema.users.id, payload.userId))
+      .where(eq(schema.users.id, userId))
       .limit(1);
 
     if (!user) {
-      return NextResponse.json({ error: 'Unknown userId for draft creation' }, { status: 404 });
+      return NextResponse.json({ error: 'Unknown user for draft creation' }, { status: 404 });
     }
 
     const appUrl = env.NEXT_PUBLIC_APP_URL;
     const generated = draftBeaconFromContext(payload, `${appUrl}/dashboard`);
-    const savedDraft = await createBeaconForUser(payload.userId, {
+    const savedDraft = await createBeaconForUser(userId, {
       title: generated.title,
       summary: generated.summary,
       exploring: generated.exploring,

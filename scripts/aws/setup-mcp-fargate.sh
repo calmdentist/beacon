@@ -54,6 +54,21 @@ ASSIGN_PUBLIC_IP="${ASSIGN_PUBLIC_IP:-ENABLED}" # ENABLED | DISABLED
 BEACON_API_URL="${BEACON_API_URL:-}"
 BEACON_API_TOKEN="${BEACON_API_TOKEN:-}"
 SECRET_NAME="${SECRET_NAME:-/${APP_NAME}/${ENV_NAME}/mcp/BEACON_API_TOKEN}"
+MCP_PUBLIC_BASE_URL="${MCP_PUBLIC_BASE_URL:-}"
+MCP_AUTH_MODE="${MCP_AUTH_MODE:-oauth}"
+MCP_REQUIRED_SCOPES="${MCP_REQUIRED_SCOPES:-mcp:tools}"
+MCP_USER_ID_CLAIM="${MCP_USER_ID_CLAIM:-sub}"
+MCP_DEV_USER_ID="${MCP_DEV_USER_ID:-}"
+
+MCP_OAUTH_ISSUER_URL="${MCP_OAUTH_ISSUER_URL:-}"
+MCP_OAUTH_AUTHORIZATION_ENDPOINT="${MCP_OAUTH_AUTHORIZATION_ENDPOINT:-}"
+MCP_OAUTH_TOKEN_ENDPOINT="${MCP_OAUTH_TOKEN_ENDPOINT:-}"
+MCP_OAUTH_REGISTRATION_ENDPOINT="${MCP_OAUTH_REGISTRATION_ENDPOINT:-}"
+MCP_OAUTH_REVOCATION_ENDPOINT="${MCP_OAUTH_REVOCATION_ENDPOINT:-}"
+MCP_OAUTH_INTROSPECTION_ENDPOINT="${MCP_OAUTH_INTROSPECTION_ENDPOINT:-}"
+MCP_OAUTH_JWKS_URL="${MCP_OAUTH_JWKS_URL:-}"
+MCP_OAUTH_AUDIENCE="${MCP_OAUTH_AUDIENCE:-}"
+MCP_OAUTH_SCOPES_SUPPORTED="${MCP_OAUTH_SCOPES_SUPPORTED:-$MCP_REQUIRED_SCOPES}"
 
 LOG_GROUP="${LOG_GROUP:-/ecs/${TASK_FAMILY}}"
 LOG_RETENTION_DAYS="${LOG_RETENTION_DAYS:-14}"
@@ -66,6 +81,34 @@ ALLOWED_CIDR="${ALLOWED_CIDR:-0.0.0.0/0}"
 
 [[ -n "$BEACON_API_URL" ]] || die "BEACON_API_URL is required."
 [[ -n "$BEACON_API_TOKEN" ]] || die "BEACON_API_TOKEN is required."
+[[ -n "$MCP_PUBLIC_BASE_URL" ]] || die "MCP_PUBLIC_BASE_URL is required."
+
+case "$MCP_AUTH_MODE" in
+  oauth|none) ;;
+  *) die "MCP_AUTH_MODE must be oauth or none." ;;
+esac
+
+if [[ "$MCP_AUTH_MODE" == "oauth" ]]; then
+  [[ -n "$MCP_OAUTH_ISSUER_URL" ]] || die "MCP_OAUTH_ISSUER_URL is required when MCP_AUTH_MODE=oauth."
+  [[ -n "$MCP_OAUTH_AUTHORIZATION_ENDPOINT" ]] || die "MCP_OAUTH_AUTHORIZATION_ENDPOINT is required when MCP_AUTH_MODE=oauth."
+  [[ -n "$MCP_OAUTH_TOKEN_ENDPOINT" ]] || die "MCP_OAUTH_TOKEN_ENDPOINT is required when MCP_AUTH_MODE=oauth."
+  [[ -n "$MCP_OAUTH_JWKS_URL" ]] || die "MCP_OAUTH_JWKS_URL is required when MCP_AUTH_MODE=oauth."
+fi
+
+MCP_OPTIONAL_ENV_LINES=""
+append_mcp_optional_env() {
+  local key="$1"
+  local value="$2"
+  if [[ -n "$value" ]]; then
+    MCP_OPTIONAL_ENV_LINES+=$',\n        { "name": "'"$key"'", "value": "'"$value"'" }'
+  fi
+}
+
+append_mcp_optional_env "MCP_DEV_USER_ID" "$MCP_DEV_USER_ID"
+append_mcp_optional_env "MCP_OAUTH_REGISTRATION_ENDPOINT" "$MCP_OAUTH_REGISTRATION_ENDPOINT"
+append_mcp_optional_env "MCP_OAUTH_REVOCATION_ENDPOINT" "$MCP_OAUTH_REVOCATION_ENDPOINT"
+append_mcp_optional_env "MCP_OAUTH_INTROSPECTION_ENDPOINT" "$MCP_OAUTH_INTROSPECTION_ENDPOINT"
+append_mcp_optional_env "MCP_OAUTH_AUDIENCE" "$MCP_OAUTH_AUDIENCE"
 
 case "$ASSIGN_PUBLIC_IP" in
   ENABLED|DISABLED) ;;
@@ -382,7 +425,16 @@ cat >"$TASK_DEF_FILE" <<JSON
       "environment": [
         { "name": "NODE_ENV", "value": "production" },
         { "name": "MCP_PORT", "value": "$CONTAINER_PORT" },
-        { "name": "BEACON_API_URL", "value": "$BEACON_API_URL" }
+        { "name": "MCP_PUBLIC_BASE_URL", "value": "$MCP_PUBLIC_BASE_URL" },
+        { "name": "BEACON_API_URL", "value": "$BEACON_API_URL" },
+        { "name": "MCP_AUTH_MODE", "value": "$MCP_AUTH_MODE" },
+        { "name": "MCP_REQUIRED_SCOPES", "value": "$MCP_REQUIRED_SCOPES" },
+        { "name": "MCP_USER_ID_CLAIM", "value": "$MCP_USER_ID_CLAIM" },
+        { "name": "MCP_OAUTH_ISSUER_URL", "value": "$MCP_OAUTH_ISSUER_URL" },
+        { "name": "MCP_OAUTH_AUTHORIZATION_ENDPOINT", "value": "$MCP_OAUTH_AUTHORIZATION_ENDPOINT" },
+        { "name": "MCP_OAUTH_TOKEN_ENDPOINT", "value": "$MCP_OAUTH_TOKEN_ENDPOINT" },
+        { "name": "MCP_OAUTH_JWKS_URL", "value": "$MCP_OAUTH_JWKS_URL" },
+        { "name": "MCP_OAUTH_SCOPES_SUPPORTED", "value": "$MCP_OAUTH_SCOPES_SUPPORTED" }$MCP_OPTIONAL_ENV_LINES
       ],
       "secrets": [
         { "name": "BEACON_API_TOKEN", "valueFrom": "$SECRET_ARN" }

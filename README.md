@@ -64,6 +64,8 @@ Minimum practical local set:
 - `NEON_AUTH_COOKIE_SECRET` (>= 32 chars)
 - `BEACON_API_TOKEN`
 - `OPENAI_API_KEY`
+- `MCP_AUTH_MODE=none`
+- `MCP_DEV_USER_ID=<existing-beacon-user-id>`
 
 ### 3. Start Postgres
 
@@ -86,14 +88,20 @@ npm run dev:mcp
 
 ## `@Beacon this` Flow (Implemented)
 
-1. MCP client calls `POST /tools/create_beacon_from_context` on `apps/mcp`.
-2. MCP forwards context to web `POST /api/mcp/drafts` with `BEACON_API_TOKEN`.
-3. Web persists a Beacon draft (`status='draft'`, `sourceType='mcp'`).
-4. Response includes a `reviewUrl` (`/beacons/:id/review`).
-5. User reviews, edits, and either:
+1. MCP client connects to `apps/mcp` via Streamable HTTP endpoint: `POST/GET/DELETE /mcp`.
+2. MCP tool `create_beacon_from_context` runs with user identity derived from bearer token claims.
+3. MCP forwards context to web `POST /api/mcp/drafts` using `BEACON_API_TOKEN` and `x-beacon-user-id`.
+4. Web persists a Beacon draft (`status='draft'`, `sourceType='mcp'`).
+5. Response includes a `reviewUrl` (`/beacons/:id/review`).
+6. User reviews, edits, and either:
    - saves draft
    - publishes Beacon (`status='saved'`, optional matching)
    - discards draft (`status='archived'`)
+
+### MCP Auth Modes
+
+- `MCP_AUTH_MODE=oauth` (required in production): validates bearer tokens via configured OAuth/JWKS.
+- `MCP_AUTH_MODE=none` (local testing only): bypasses bearer auth and uses `MCP_DEV_USER_ID`.
 
 ## Production Env Validation
 
@@ -129,6 +137,12 @@ Required environment variables:
 - `AWS_REGION`
 - `BEACON_API_URL` (your Vercel web URL, e.g. `https://your-app.vercel.app`)
 - `BEACON_API_TOKEN` (must match web app env var)
+- `MCP_PUBLIC_BASE_URL` (public MCP base URL, e.g. `https://mcp.usebeacon.ai`)
+- `MCP_AUTH_MODE=oauth`
+- `MCP_OAUTH_ISSUER_URL`
+- `MCP_OAUTH_AUTHORIZATION_ENDPOINT`
+- `MCP_OAUTH_TOKEN_ENDPOINT`
+- `MCP_OAUTH_JWKS_URL`
 
 Example:
 

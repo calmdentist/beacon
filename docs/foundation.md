@@ -15,8 +15,8 @@ This repository now includes a practical scaffold for the architecture in `archi
 
 ## Current assumptions
 
-- Web auth uses Auth.js (NextAuth v5) with Google OAuth + email magic links
-- Session persistence is handled through Drizzle adapter tables (`accounts`, `sessions`, `verification_tokens`)
+- Web auth uses Neon Auth (`@neondatabase/auth`) with Google + email OTP through the Neon auth UI
+- App-level user records are synchronized into Beacon's `users` table on authenticated requests
 - Match generation degrades gracefully when `OPENAI_API_KEY` is missing in non-production environments
 - MCP service uses HTTP endpoint contract and is ready for full MCP transport integration
 - Production env validation is available via `npm run env:check:prod`

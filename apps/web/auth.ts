@@ -1,5 +1,14 @@
-import NextAuth from 'next-auth';
+import { createNeonAuth } from '@neondatabase/auth/next/server';
 
-import { authConfig } from '@/lib/auth-config';
+import { getWebEnv } from '@/lib/env';
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+const env = getWebEnv();
+
+export const auth = createNeonAuth({
+  baseUrl: env.NEON_AUTH_BASE_URL,
+  cookies: {
+    secret: env.NEON_AUTH_COOKIE_SECRET,
+    sessionDataTtl: env.NEON_AUTH_SESSION_DATA_TTL,
+    domain: env.NEON_AUTH_COOKIE_DOMAIN
+  }
+});

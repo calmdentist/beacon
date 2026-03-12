@@ -6,12 +6,10 @@ const webEnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
   DATABASE_URL: z.string().min(1).default('postgres://postgres:postgres@localhost:5432/beacon'),
-  AUTH_SECRET: z.string().min(1).default('replace-me'),
-  AUTH_GOOGLE_ID: z.string().optional(),
-  AUTH_GOOGLE_SECRET: z.string().optional(),
-  AUTH_EMAIL_FROM: z.string().optional(),
-  AUTH_EMAIL_SERVER: z.string().optional(),
-  AUTH_TRUST_HOST: z.string().optional(),
+  NEON_AUTH_BASE_URL: z.string().url().default('https://replace-me.neon.tech'),
+  NEON_AUTH_COOKIE_SECRET: z.string().min(32).default('replace-me-with-a-32-char-cookie-secret'),
+  NEON_AUTH_SESSION_DATA_TTL: z.coerce.number().int().positive().optional(),
+  NEON_AUTH_COOKIE_DOMAIN: z.string().optional(),
   BEACON_API_TOKEN: z.string().min(1).default('replace-me'),
   OPENAI_API_KEY: z.string().optional(),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
@@ -40,24 +38,12 @@ export function assertProductionWebEnv(): void {
 
   const missing: string[] = [];
 
-  if (isPlaceholder(env.AUTH_SECRET)) {
-    missing.push('AUTH_SECRET');
+  if (isPlaceholder(env.NEON_AUTH_BASE_URL)) {
+    missing.push('NEON_AUTH_BASE_URL');
   }
 
-  if (!env.AUTH_GOOGLE_ID) {
-    missing.push('AUTH_GOOGLE_ID');
-  }
-
-  if (!env.AUTH_GOOGLE_SECRET) {
-    missing.push('AUTH_GOOGLE_SECRET');
-  }
-
-  if (!env.AUTH_EMAIL_SERVER) {
-    missing.push('AUTH_EMAIL_SERVER');
-  }
-
-  if (!env.AUTH_EMAIL_FROM) {
-    missing.push('AUTH_EMAIL_FROM');
+  if (isPlaceholder(env.NEON_AUTH_COOKIE_SECRET)) {
+    missing.push('NEON_AUTH_COOKIE_SECRET');
   }
 
   if (isPlaceholder(env.BEACON_API_TOKEN)) {
@@ -74,5 +60,5 @@ export function assertProductionWebEnv(): void {
 }
 
 function isPlaceholder(value: string): boolean {
-  return value.trim().length === 0 || value === 'replace-me';
+  return value.trim().length === 0 || value.includes('replace-me');
 }

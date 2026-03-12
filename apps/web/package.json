@@ -11,13 +11,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.1",
     "@beacon/ai": "0.1.0",
     "@beacon/core": "0.1.0",
     "@beacon/db": "0.1.0",
+    "@neondatabase/auth": "^0.2.0-beta.1",
     "next": "^15.2.0",
-    "next-auth": "^5.0.0-beta.29",
-    "nodemailer": "^7.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

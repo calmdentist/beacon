@@ -40,7 +40,7 @@ Out of scope for now:
 ## Tech Stack
 
 - Next.js 15 + TypeScript
-- Auth.js (NextAuth v5) with Google + email magic links
+- Neon Auth (`@neondatabase/auth`) with Google + email OTP UI
 - Postgres + pgvector
 - Drizzle ORM
 - OpenAI embeddings (configurable model)
@@ -60,11 +60,8 @@ Copy `.env.example` to `.env` and fill required values.
 
 Minimum practical local set:
 - `DATABASE_URL`
-- `AUTH_SECRET`
-- `AUTH_GOOGLE_ID`
-- `AUTH_GOOGLE_SECRET`
-- `AUTH_EMAIL_SERVER`
-- `AUTH_EMAIL_FROM`
+- `NEON_AUTH_BASE_URL`
+- `NEON_AUTH_COOKIE_SECRET` (>= 32 chars)
 - `BEACON_API_TOKEN`
 - `OPENAI_API_KEY`
 
@@ -107,7 +104,7 @@ npm run env:check:prod
 ```
 
 This checks required production env vars for:
-- Auth (Google + SMTP + secret)
+- Neon Auth base URL + cookie secret
 - MCP token wiring
 - OpenAI embedding config
 - DB/app URLs

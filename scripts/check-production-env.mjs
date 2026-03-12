@@ -3,12 +3,8 @@
 const REQUIRED_WEB = [
   'NEXT_PUBLIC_APP_URL',
   'DATABASE_URL',
-  'AUTH_SECRET',
-  'AUTH_GOOGLE_ID',
-  'AUTH_GOOGLE_SECRET',
-  'AUTH_EMAIL_SERVER',
-  'AUTH_EMAIL_FROM',
-  'AUTH_TRUST_HOST',
+  'NEON_AUTH_BASE_URL',
+  'NEON_AUTH_COOKIE_SECRET',
   'BEACON_API_TOKEN',
   'OPENAI_API_KEY',
   'EMBEDDING_MODEL',
@@ -19,8 +15,6 @@ const REQUIRED_MCP = [
   'BEACON_API_URL',
   'BEACON_API_TOKEN'
 ];
-
-const PLACEHOLDER_VALUES = new Set(['replace-me']);
 
 const missing = [];
 const placeholders = [];
@@ -33,13 +27,13 @@ for (const key of [...REQUIRED_WEB, ...REQUIRED_MCP]) {
     continue;
   }
 
-  if (PLACEHOLDER_VALUES.has(value.trim())) {
+  if (value.trim().includes('replace-me')) {
     placeholders.push(key);
   }
 }
 
-if (!process.env.AUTH_EMAIL_SERVER?.startsWith('smtp://')) {
-  placeholders.push('AUTH_EMAIL_SERVER (must be smtp://...)');
+if ((process.env.NEON_AUTH_COOKIE_SECRET ?? '').trim().length < 32) {
+  placeholders.push('NEON_AUTH_COOKIE_SECRET (must be at least 32 chars)');
 }
 
 if (missing.length === 0 && placeholders.length === 0) {

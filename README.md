@@ -116,6 +116,37 @@ npm run typecheck
 npm run build
 ```
 
+## Deploy MCP to AWS (ECS/Fargate)
+
+This repo includes a bootstrap script at `scripts/aws/setup-mcp-fargate.sh` that:
+- builds and pushes `apps/mcp` Docker image to ECR
+- creates/updates IAM task roles
+- creates/updates `BEACON_API_TOKEN` in Secrets Manager
+- creates/updates CloudWatch logs + ECS cluster/service/task definition
+- uses default VPC/default subnets if `VPC_ID`/`SUBNET_IDS` are not set
+
+Required environment variables:
+- `AWS_REGION`
+- `BEACON_API_URL` (your Vercel web URL, e.g. `https://your-app.vercel.app`)
+- `BEACON_API_TOKEN` (must match web app env var)
+
+Example:
+
+```bash
+AWS_REGION=us-east-1 \
+BEACON_API_URL=https://your-app.vercel.app \
+BEACON_API_TOKEN=replace-with-strong-token \
+./scripts/aws/setup-mcp-fargate.sh
+```
+
+Optional overrides:
+- `APP_NAME` (default `beacon`)
+- `ENV_NAME` (default `prod`)
+- `DESIRED_COUNT` (default `1`)
+- `ASSIGN_PUBLIC_IP` (`ENABLED` by default)
+- `ALLOWED_CIDR` (default `0.0.0.0/0` when public IP is enabled)
+- `VPC_ID`, `SUBNET_IDS` (comma-separated), `SECURITY_GROUP_ID`
+
 ## Product Docs
 
 - Manifesto: [`manifesto.md`](./manifesto.md)

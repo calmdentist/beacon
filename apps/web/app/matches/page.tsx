@@ -19,22 +19,27 @@ export default async function MatchesPage() {
   const matches = await listMatchesForUser(userId);
 
   return (
-    <main className="container pb-16">
-      <h1 className="mb-2 text-3xl font-semibold">Match inbox</h1>
-      <p className="mb-8 text-neutral-600">Suggested related Beacons and intro opportunities.</p>
+    <main className="container pb-20">
+      <section className="mb-7">
+        <p className="chip mb-3">Matching</p>
+        <h1 className="text-4xl font-semibold leading-tight md:text-5xl">Match Inbox</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[color:var(--ink-muted)] md:text-base">
+          Related beacons ranked by semantic similarity and intent fit.
+        </p>
+      </section>
 
       {matches.length === 0 ? (
-        <div className="card p-6 text-sm text-neutral-700">No matches yet.</div>
+        <div className="card p-6 text-sm text-[color:var(--ink-muted)]">No matches yet.</div>
       ) : (
-        <div className="space-y-3">
+        <div className="stagger space-y-3">
           {matches.map((match) => (
             <article key={match.id} className="card p-5">
-              <div className="mb-2 flex items-center justify-between text-sm text-neutral-500">
-                <span>{match.matchType}</span>
-                <span>score: {Number(match.score).toFixed(2)}</span>
+              <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-[color:var(--ink-muted)]">
+                <span className="chip">{match.matchType}</span>
+                <span>score {Number(match.score).toFixed(2)}</span>
               </div>
-              <p className="mb-2 text-sm text-neutral-700">{match.reason}</p>
-              <p className="text-xs text-neutral-500">status: {match.status}</p>
+              <p className="mb-2 text-sm leading-relaxed text-[color:var(--ink)]">{match.reason}</p>
+              <p className="text-xs text-[color:var(--ink-muted)]">status: {match.status}</p>
             </article>
           ))}
         </div>

@@ -43,17 +43,17 @@ export default async function BeaconDraftReviewPage({ params }: ReviewPageProps)
   }
 
   return (
-    <main className="container pb-16">
+    <main className="container pb-20">
       <div className="mb-8 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-neutral-500">MCP Draft Review</p>
-          <h1 className="text-3xl font-semibold">Review Beacon Draft</h1>
-          <p className="mt-2 text-sm text-neutral-600">
+          <p className="chip mb-2">MCP Draft Review</p>
+          <h1 className="text-4xl font-semibold leading-tight md:text-5xl">Review Beacon Draft</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[color:var(--ink-muted)] md:text-base">
             Edit the generated draft, choose matching settings, and publish when ready.
           </p>
         </div>
-        <Link href="/dashboard" className="text-sm text-neutral-600 underline underline-offset-4">
-          Back to dashboard
+        <Link href="/dashboard" className="button-ghost text-sm">
+          Back to Dashboard
         </Link>
       </div>
 

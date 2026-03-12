@@ -93,90 +93,91 @@ export function ReviewDraftForm({ draft }: ReviewDraftFormProps) {
   }
 
   return (
-    <section className="card space-y-5 p-6">
+    <section className="card space-y-5 p-6 md:p-8">
       <div>
-        <label htmlFor="title" className="mb-1 block text-sm font-medium text-neutral-700">
+        <label htmlFor="title" className="mb-1 block text-sm font-medium text-[color:var(--ink-muted)]">
           Title
         </label>
         <input
           id="title"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+          className="w-full px-3 py-2"
           maxLength={160}
         />
       </div>
 
       <div>
-        <label htmlFor="summary" className="mb-1 block text-sm font-medium text-neutral-700">
+        <label htmlFor="summary" className="mb-1 block text-sm font-medium text-[color:var(--ink-muted)]">
           Summary
         </label>
         <textarea
           id="summary"
           value={summary}
           onChange={(event) => setSummary(event.target.value)}
-          className="min-h-20 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+          className="min-h-20 w-full px-3 py-2"
           maxLength={1200}
         />
       </div>
 
       <div>
-        <label htmlFor="exploring" className="mb-1 block text-sm font-medium text-neutral-700">
+        <label htmlFor="exploring" className="mb-1 block text-sm font-medium text-[color:var(--ink-muted)]">
           What I&apos;m exploring
         </label>
         <textarea
           id="exploring"
           value={exploring}
           onChange={(event) => setExploring(event.target.value)}
-          className="min-h-28 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+          className="min-h-28 w-full px-3 py-2"
           maxLength={2000}
         />
       </div>
 
       <div>
-        <label htmlFor="helpWanted" className="mb-1 block text-sm font-medium text-neutral-700">
+        <label htmlFor="helpWanted" className="mb-1 block text-sm font-medium text-[color:var(--ink-muted)]">
           What I want help with
         </label>
         <textarea
           id="helpWanted"
           value={helpWanted}
           onChange={(event) => setHelpWanted(event.target.value)}
-          className="min-h-28 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+          className="min-h-28 w-full px-3 py-2"
           maxLength={2000}
         />
       </div>
 
       <div>
-        <label htmlFor="tags" className="mb-1 block text-sm font-medium text-neutral-700">
+        <label htmlFor="tags" className="mb-1 block text-sm font-medium text-[color:var(--ink-muted)]">
           Tags (comma separated)
         </label>
         <input
           id="tags"
           value={tagsInput}
           onChange={(event) => setTagsInput(event.target.value)}
-          className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
+          className="w-full px-3 py-2"
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-neutral-700">
+      <label className="flex items-center gap-2 text-sm text-[color:var(--ink-muted)]">
         <input
           type="checkbox"
           checked={openToMatching}
           onChange={(event) => setOpenToMatching(event.target.checked)}
           disabled={isPending}
+          className="h-4 w-4"
         />
         Open to matching when saved
       </label>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
-      {notice ? <p className="text-sm text-emerald-700">{notice}</p> : null}
+      {error ? <p className="text-sm text-[#ff8a7a]">{error}</p> : null}
+      {notice ? <p className="text-sm text-[color:var(--teal)]">{notice}</p> : null}
 
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
           onClick={() => runAction('save_beacon')}
           disabled={isPending}
-          className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="button-primary text-sm disabled:opacity-50"
         >
           Save Beacon
         </button>
@@ -184,7 +185,7 @@ export function ReviewDraftForm({ draft }: ReviewDraftFormProps) {
           type="button"
           onClick={() => runAction('save_draft')}
           disabled={isPending}
-          className="rounded-full border border-neutral-300 px-5 py-2 text-sm font-medium disabled:opacity-50"
+          className="button-ghost text-sm disabled:opacity-50"
         >
           Save Draft
         </button>
@@ -192,7 +193,7 @@ export function ReviewDraftForm({ draft }: ReviewDraftFormProps) {
           type="button"
           onClick={() => runAction('discard')}
           disabled={isPending}
-          className="rounded-full border border-red-300 px-5 py-2 text-sm font-medium text-red-700 disabled:opacity-50"
+          className="rounded-full border border-[rgba(181,71,22,0.45)] bg-[rgba(215,92,34,0.11)] px-5 py-2 text-sm font-semibold text-[color:var(--brand-strong)] disabled:opacity-50"
         >
           Discard Draft
         </button>

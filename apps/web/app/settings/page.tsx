@@ -14,9 +14,12 @@ export default async function SettingsPage() {
   }
 
   return (
-    <main className="container pb-16">
-      <h1 className="mb-2 text-3xl font-semibold">Settings</h1>
-      <p className="card p-6 text-neutral-700">Auth, profile, and MCP token settings will live here.</p>
+    <main className="container pb-20">
+      <p className="chip mb-3">Account</p>
+      <h1 className="mb-4 text-4xl font-semibold leading-tight md:text-5xl">Settings</h1>
+      <p className="card p-6 text-sm leading-relaxed text-[color:var(--ink-muted)] md:text-base">
+        Auth, profile, and MCP token settings will live here.
+      </p>
     </main>
   );
 }

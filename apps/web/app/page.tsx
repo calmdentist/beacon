@@ -79,17 +79,17 @@ const faqs = [
 
 export default function HomePage() {
   return (
-    <main className="landing container pb-28">
-      <section className="grid gap-10 pt-10 md:grid-cols-[1.08fr_1fr] md:items-center">
-        <div className="space-y-6">
-          <h1 className="max-w-3xl text-[clamp(2.45rem,5vw,4.7rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+    <main className="landing container pb-20 md:pb-28">
+      <section className="grid gap-7 pt-6 md:grid-cols-[1.08fr_1fr] md:items-center md:gap-10 md:pt-10">
+        <div className="space-y-5 md:space-y-6">
+          <h1 className="max-w-3xl text-[clamp(2.05rem,8.8vw,4.7rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
             Turn your LLM rabbit holes into connections
           </h1>
-          <p className="max-w-2xl text-lg leading-relaxed text-[color:var(--ink-muted)] md:text-[1.18rem]">
+          <p className="max-w-2xl text-base leading-relaxed text-[color:var(--ink-muted)] md:text-[1.18rem]">
             Had an interesting exploration with ChatGPT or Claude? Beacon it, then discover who else is thinking about
             the same thing or who can help move it forward.
           </p>
-          <div className="hero-cta flex flex-wrap gap-3">
+          <div className="hero-cta flex flex-wrap gap-2.5 md:gap-3">
             <Link href="/login" className="button-primary">
               Try now
             </Link>
@@ -107,18 +107,18 @@ export default function HomePage() {
           alt="Spider-Man meme showing two people pointing at each other"
           width={1200}
           height={900}
-          className="h-auto w-full rounded-2xl object-cover"
+          className="h-auto w-full rounded-[20px] object-cover"
           priority
         />
       </section>
 
-      <section className="space-y-5" id="problem">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="space-y-4 md:space-y-5" id="problem">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           Your best ideas are getting trapped in chat history
         </h2>
         <ul className="space-y-3 text-[color:var(--ink-muted)]">
           {problemPoints.map((point) => (
-            <li key={point} className="card p-5 leading-relaxed">
+            <li key={point} className="card p-4 leading-relaxed md:p-5">
               {point}
             </li>
           ))}
@@ -128,17 +128,17 @@ export default function HomePage() {
         </p>
       </section>
 
-      <section className="space-y-5" id="solution">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="space-y-4 md:space-y-5" id="solution">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           Beacon turns live inquiry into discovery
         </h2>
         <p className="max-w-3xl text-[color:var(--ink-muted)]">
           When you have a valuable conversation with your LLM, Beacon turns it into a structured inquiry you can save,
           revisit, and optionally open up to matching.
         </p>
-        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+        <div className="grid gap-3.5 md:grid-cols-3 md:gap-5">
           {solutionSteps.map((step, index) => (
-            <article key={step.title} className="card p-6">
+            <article key={step.title} className="card p-5 md:p-6">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-muted)]">
                 Step {index + 1}
               </p>
@@ -149,24 +149,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="space-y-5">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="space-y-4 md:space-y-5">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           A new primitive for the LLM era
         </h2>
-        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
-          <article className="card p-6">
+        <div className="grid gap-3.5 md:grid-cols-3 md:gap-5">
+          <article className="card p-5 md:p-6">
             <h3 className="mb-2 text-xl font-semibold">Beacon Card</h3>
             <p className="text-sm text-[color:var(--ink-muted)]">
               Title, summary, what you are exploring, and what help you want.
             </p>
           </article>
-          <article className="card p-6">
+          <article className="card p-5 md:p-6">
             <h3 className="mb-2 text-xl font-semibold">Related Thinkers</h3>
             <p className="text-sm text-[color:var(--ink-muted)]">
               Find people on the same topic and people with useful adjacent expertise.
             </p>
           </article>
-          <article className="card p-6">
+          <article className="card p-5 md:p-6">
             <h3 className="mb-2 text-xl font-semibold">Intro Prompt</h3>
             <p className="text-sm text-[color:var(--ink-muted)]">
               A lightweight way to connect around inquiry without broadcasting to a feed.
@@ -178,13 +178,13 @@ export default function HomePage() {
         </p>
       </section>
 
-      <section className="space-y-5">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="space-y-4 md:space-y-5">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           Why this is different
         </h2>
-        <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+        <div className="grid gap-3.5 md:grid-cols-3 md:gap-5">
           {differences.map((item) => (
-            <article key={item.title} className="card p-6">
+            <article key={item.title} className="card p-5 md:p-6">
               <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
               <p className="text-sm leading-relaxed text-[color:var(--ink-muted)]">{item.description}</p>
             </article>
@@ -192,13 +192,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="space-y-5">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="space-y-4 md:space-y-5">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           For people who think with LLMs
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-4">
+        <div className="grid gap-3.5 sm:grid-cols-2 md:gap-5 lg:grid-cols-4">
           {useCases.map((item) => (
-            <article key={item.title} className="card p-6">
+            <article key={item.title} className="card p-5 md:p-6">
               <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
               <p className="text-sm leading-relaxed text-[color:var(--ink-muted)]">{item.description}</p>
             </article>
@@ -206,8 +206,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="card space-y-5 p-7 md:p-9">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="card space-y-4 p-5 md:space-y-5 md:p-9">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           A missing social primitive
         </h2>
         <p className="max-w-3xl leading-relaxed text-[color:var(--ink-muted)]">
@@ -219,28 +219,28 @@ export default function HomePage() {
         </p>
       </section>
 
-      <section className="space-y-5" id="how-it-works">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">How Beacon works</h2>
-        <ol className="grid gap-4 md:grid-cols-4 md:gap-5">
-          <li className="card p-6 text-sm leading-relaxed text-[color:var(--ink-muted)]">
+      <section className="space-y-4 md:space-y-5" id="how-it-works">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">How Beacon works</h2>
+        <ol className="grid gap-3.5 md:grid-cols-4 md:gap-5">
+          <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">
             1. Have an interesting conversation with your LLM
           </li>
-          <li className="card p-6 text-sm leading-relaxed text-[color:var(--ink-muted)]">2. Click "Beacon this"</li>
-          <li className="card p-6 text-sm leading-relaxed text-[color:var(--ink-muted)]">
+          <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">2. Click "Beacon this"</li>
+          <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">
             3. Review the generated inquiry
           </li>
-          <li className="card p-6 text-sm leading-relaxed text-[color:var(--ink-muted)]">
+          <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">
             4. See who else is thinking about it
           </li>
         </ol>
         <p className="text-sm text-[color:var(--ink-muted)]">Private by default. Social only when you choose.</p>
       </section>
 
-      <section className="space-y-5" id="faq">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">FAQ</h2>
+      <section className="space-y-4 md:space-y-5" id="faq">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">FAQ</h2>
         <div className="space-y-3">
           {faqs.map((faq) => (
-            <article key={faq.question} className="card p-6">
+            <article key={faq.question} className="card p-5 md:p-6">
               <h3 className="mb-2 text-lg font-semibold">{faq.question}</h3>
               <p className="text-sm leading-relaxed text-[color:var(--ink-muted)]">{faq.answer}</p>
             </article>
@@ -248,8 +248,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="card space-y-5 p-7 md:p-9">
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
+      <section className="card space-y-4 p-5 md:space-y-5 md:p-9">
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
           Your next great conversation might already be out there
         </h2>
         <p className="max-w-3xl leading-relaxed text-[color:var(--ink-muted)]">
@@ -262,19 +262,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="pt-10 text-sm text-[color:var(--ink-muted)]">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <a href="#solution">Product</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQ</a>
-          <a href="mailto:founders@usebeacon.ai">Contact</a>
-          <a href="https://x.com" target="_blank" rel="noreferrer">
-            X / socials
-          </a>
-          <Link href="/">Privacy</Link>
-          <Link href="/">Terms</Link>
+      <footer className="footer">
+        <div className="footer-grid">
+          <div>
+            <p className="text-base font-semibold text-[color:var(--ink)]">Beacon</p>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-[color:var(--ink-muted)]">
+              Turn live inquiry into connection.
+            </p>
+          </div>
+          <div className="footer-links">
+            <a href="#solution">Product</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#faq">FAQ</a>
+            <a href="mailto:founders@usebeacon.ai">Contact</a>
+            <a href="https://x.com" target="_blank" rel="noreferrer">
+              X / socials
+            </a>
+            <Link href="/">Privacy</Link>
+            <Link href="/">Terms</Link>
+          </div>
         </div>
-        <p className="mt-3">Beacon - turn live inquiry into connection</p>
+        <p className="footer-meta">Beacon</p>
       </footer>
     </main>
   );

@@ -21,10 +21,12 @@ const app = createMcpExpressApp({
   allowedHosts: env.allowedHosts.length > 0 ? env.allowedHosts : undefined
 });
 
-const { authMiddleware, authMetadataRouter } = createAuthMiddleware();
+app.set('trust proxy', true);
 
-if (authMetadataRouter) {
-  app.use(authMetadataRouter);
+const { authMiddleware, authRouter } = createAuthMiddleware();
+
+if (authRouter) {
+  app.use(authRouter);
 }
 
 app.get('/health', (_req, res) => {

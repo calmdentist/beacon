@@ -28,6 +28,10 @@ is_true() {
   esac
 }
 
+is_positive_integer() {
+  [[ "${1:-}" =~ ^[1-9][0-9]*$ ]]
+}
+
 aws sts get-caller-identity >/dev/null 2>&1 || die "AWS CLI is not authenticated. Run 'aws sso login' or configure credentials first."
 
 AWS_REGION="${AWS_REGION:-$(aws configure get region || true)}"
@@ -61,22 +65,31 @@ HEALTH_CHECK_GRACE_PERIOD_SECONDS="${HEALTH_CHECK_GRACE_PERIOD_SECONDS:-60}"
 
 BEACON_API_URL="${BEACON_API_URL:-}"
 BEACON_API_TOKEN="${BEACON_API_TOKEN:-}"
-SECRET_NAME="${SECRET_NAME:-/${APP_NAME}/${ENV_NAME}/mcp/BEACON_API_TOKEN}"
+BEACON_API_TOKEN_SECRET_NAME="${BEACON_API_TOKEN_SECRET_NAME:-${SECRET_NAME:-/${APP_NAME}/${ENV_NAME}/mcp/BEACON_API_TOKEN}}"
 MCP_PUBLIC_BASE_URL="${MCP_PUBLIC_BASE_URL:-}"
 MCP_AUTH_MODE="${MCP_AUTH_MODE:-oauth}"
 MCP_REQUIRED_SCOPES="${MCP_REQUIRED_SCOPES:-mcp:tools}"
-MCP_USER_ID_CLAIM="${MCP_USER_ID_CLAIM:-sub}"
 MCP_DEV_USER_ID="${MCP_DEV_USER_ID:-}"
 
 MCP_OAUTH_ISSUER_URL="${MCP_OAUTH_ISSUER_URL:-}"
-MCP_OAUTH_AUTHORIZATION_ENDPOINT="${MCP_OAUTH_AUTHORIZATION_ENDPOINT:-}"
-MCP_OAUTH_TOKEN_ENDPOINT="${MCP_OAUTH_TOKEN_ENDPOINT:-}"
-MCP_OAUTH_REGISTRATION_ENDPOINT="${MCP_OAUTH_REGISTRATION_ENDPOINT:-}"
-MCP_OAUTH_REVOCATION_ENDPOINT="${MCP_OAUTH_REVOCATION_ENDPOINT:-}"
-MCP_OAUTH_INTROSPECTION_ENDPOINT="${MCP_OAUTH_INTROSPECTION_ENDPOINT:-}"
-MCP_OAUTH_JWKS_URL="${MCP_OAUTH_JWKS_URL:-}"
-MCP_OAUTH_AUDIENCE="${MCP_OAUTH_AUDIENCE:-}"
+MCP_OAUTH_BRIDGE_URL="${MCP_OAUTH_BRIDGE_URL:-}"
 MCP_OAUTH_SCOPES_SUPPORTED="${MCP_OAUTH_SCOPES_SUPPORTED:-$MCP_REQUIRED_SCOPES}"
+MCP_OAUTH_ENABLE_DCR="${MCP_OAUTH_ENABLE_DCR:-}"
+MCP_OAUTH_RESOURCE_NAME="${MCP_OAUTH_RESOURCE_NAME:-}"
+MCP_OAUTH_COOKIE_DOMAIN="${MCP_OAUTH_COOKIE_DOMAIN:-}"
+MCP_OAUTH_COOKIE_SECURE="${MCP_OAUTH_COOKIE_SECURE:-}"
+MCP_OAUTH_COOKIE_NAME="${MCP_OAUTH_COOKIE_NAME:-}"
+MCP_OAUTH_SESSION_TTL_SECONDS="${MCP_OAUTH_SESSION_TTL_SECONDS:-}"
+MCP_OAUTH_AUTH_CODE_TTL_SECONDS="${MCP_OAUTH_AUTH_CODE_TTL_SECONDS:-}"
+MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS="${MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS:-}"
+MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS="${MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS:-}"
+MCP_OAUTH_BRIDGE_SHARED_SECRET="${MCP_OAUTH_BRIDGE_SHARED_SECRET:-}"
+MCP_OAUTH_SESSION_SECRET="${MCP_OAUTH_SESSION_SECRET:-}"
+MCP_OAUTH_TOKEN_SECRET="${MCP_OAUTH_TOKEN_SECRET:-}"
+
+MCP_OAUTH_BRIDGE_SHARED_SECRET_NAME="${MCP_OAUTH_BRIDGE_SHARED_SECRET_NAME:-/${APP_NAME}/${ENV_NAME}/mcp/MCP_OAUTH_BRIDGE_SHARED_SECRET}"
+MCP_OAUTH_SESSION_SECRET_NAME="${MCP_OAUTH_SESSION_SECRET_NAME:-/${APP_NAME}/${ENV_NAME}/mcp/MCP_OAUTH_SESSION_SECRET}"
+MCP_OAUTH_TOKEN_SECRET_NAME="${MCP_OAUTH_TOKEN_SECRET_NAME:-/${APP_NAME}/${ENV_NAME}/mcp/MCP_OAUTH_TOKEN_SECRET}"
 
 ENABLE_ALB="${ENABLE_ALB:-true}" # true|false
 MCP_PUBLIC_SCHEME="$(printf '%s' "$MCP_PUBLIC_BASE_URL" | sed -E 's#^([a-zA-Z]+)://.*#\1#')"
@@ -92,6 +105,10 @@ HEALTH_CHECK_PATH="${HEALTH_CHECK_PATH:-/health}"
 HTTPS_PORT="${HTTPS_PORT:-443}"
 HTTP_PORT="${HTTP_PORT:-80}"
 ACM_CERT_ARN="${ACM_CERT_ARN:-}"
+REQUEST_ACM_CERT_IF_MISSING="${REQUEST_ACM_CERT_IF_MISSING:-true}" # true|false
+ACM_CERT_DOMAIN="${ACM_CERT_DOMAIN:-$MCP_DOMAIN_NAME}"
+ACM_CERT_SAN="${ACM_CERT_SAN:-}" # comma-separated SANs (optional)
+ACM_REQUEST_IDEMPOTENCY_TOKEN="${ACM_REQUEST_IDEMPOTENCY_TOKEN:-}" # optional override (1-32 alnum)
 
 CREATE_ROUTE53_RECORD="${CREATE_ROUTE53_RECORD:-false}" # true|false
 ROUTE53_HOSTED_ZONE_ID="${ROUTE53_HOSTED_ZONE_ID:-}"
@@ -115,26 +132,98 @@ case "$MCP_AUTH_MODE" in
 esac
 
 if [[ "$MCP_AUTH_MODE" == "oauth" ]]; then
-  [[ -n "$MCP_OAUTH_ISSUER_URL" ]] || die "MCP_OAUTH_ISSUER_URL is required when MCP_AUTH_MODE=oauth."
-  [[ -n "$MCP_OAUTH_AUTHORIZATION_ENDPOINT" ]] || die "MCP_OAUTH_AUTHORIZATION_ENDPOINT is required when MCP_AUTH_MODE=oauth."
-  [[ -n "$MCP_OAUTH_TOKEN_ENDPOINT" ]] || die "MCP_OAUTH_TOKEN_ENDPOINT is required when MCP_AUTH_MODE=oauth."
-  [[ -n "$MCP_OAUTH_JWKS_URL" ]] || die "MCP_OAUTH_JWKS_URL is required when MCP_AUTH_MODE=oauth."
+  [[ -n "$MCP_OAUTH_BRIDGE_SHARED_SECRET" ]] || die "MCP_OAUTH_BRIDGE_SHARED_SECRET is required when MCP_AUTH_MODE=oauth."
+  [[ -n "$MCP_OAUTH_SESSION_SECRET" ]] || die "MCP_OAUTH_SESSION_SECRET is required when MCP_AUTH_MODE=oauth."
+  [[ -n "$MCP_OAUTH_TOKEN_SECRET" ]] || die "MCP_OAUTH_TOKEN_SECRET is required when MCP_AUTH_MODE=oauth."
+  [[ ${#MCP_OAUTH_BRIDGE_SHARED_SECRET} -ge 32 ]] || die "MCP_OAUTH_BRIDGE_SHARED_SECRET must be at least 32 characters."
+  [[ ${#MCP_OAUTH_SESSION_SECRET} -ge 32 ]] || die "MCP_OAUTH_SESSION_SECRET must be at least 32 characters."
+  [[ ${#MCP_OAUTH_TOKEN_SECRET} -ge 32 ]] || die "MCP_OAUTH_TOKEN_SECRET must be at least 32 characters."
 fi
 
-MCP_OPTIONAL_ENV_LINES=""
-append_mcp_optional_env() {
+if [[ -n "$MCP_OAUTH_ENABLE_DCR" ]]; then
+  case "$MCP_OAUTH_ENABLE_DCR" in
+    true|false) ;;
+    *) die "MCP_OAUTH_ENABLE_DCR must be true or false when set." ;;
+  esac
+fi
+
+if [[ -n "$MCP_OAUTH_COOKIE_SECURE" ]]; then
+  case "$MCP_OAUTH_COOKIE_SECURE" in
+    true|false) ;;
+    *) die "MCP_OAUTH_COOKIE_SECURE must be true or false when set." ;;
+  esac
+fi
+
+for ttl_var in \
+  MCP_OAUTH_SESSION_TTL_SECONDS \
+  MCP_OAUTH_AUTH_CODE_TTL_SECONDS \
+  MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS \
+  MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS; do
+  ttl_value="${!ttl_var:-}"
+  if [[ -n "$ttl_value" ]] && ! is_positive_integer "$ttl_value"; then
+    die "${ttl_var} must be a positive integer when set."
+  fi
+done
+
+TASK_ENV_NAMES=()
+TASK_ENV_VALUES=()
+TASK_SECRET_NAMES=()
+TASK_SECRET_VALUES=()
+
+add_task_env() {
+  local key="$1"
+  local value="$2"
+  TASK_ENV_NAMES+=("$key")
+  TASK_ENV_VALUES+=("$value")
+}
+
+add_task_env_if_set() {
   local key="$1"
   local value="$2"
   if [[ -n "$value" ]]; then
-    MCP_OPTIONAL_ENV_LINES+=$',\n        { "name": "'"$key"'", "value": "'"$value"'" }'
+    add_task_env "$key" "$value"
   fi
 }
 
-append_mcp_optional_env "MCP_DEV_USER_ID" "$MCP_DEV_USER_ID"
-append_mcp_optional_env "MCP_OAUTH_REGISTRATION_ENDPOINT" "$MCP_OAUTH_REGISTRATION_ENDPOINT"
-append_mcp_optional_env "MCP_OAUTH_REVOCATION_ENDPOINT" "$MCP_OAUTH_REVOCATION_ENDPOINT"
-append_mcp_optional_env "MCP_OAUTH_INTROSPECTION_ENDPOINT" "$MCP_OAUTH_INTROSPECTION_ENDPOINT"
-append_mcp_optional_env "MCP_OAUTH_AUDIENCE" "$MCP_OAUTH_AUDIENCE"
+add_task_secret() {
+  local key="$1"
+  local value_from="$2"
+  TASK_SECRET_NAMES+=("$key")
+  TASK_SECRET_VALUES+=("$value_from")
+}
+
+json_escape() {
+  local value="${1:-}"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  value="${value//$'\r'/\\r}"
+  value="${value//$'\t'/\\t}"
+  value="${value//$'\f'/\\f}"
+  value="${value//$'\b'/\\b}"
+  printf '%s' "$value"
+}
+
+add_task_env "NODE_ENV" "production"
+add_task_env "MCP_PORT" "$CONTAINER_PORT"
+add_task_env "MCP_PUBLIC_BASE_URL" "$MCP_PUBLIC_BASE_URL"
+add_task_env "BEACON_API_URL" "$BEACON_API_URL"
+add_task_env "MCP_AUTH_MODE" "$MCP_AUTH_MODE"
+add_task_env "MCP_REQUIRED_SCOPES" "$MCP_REQUIRED_SCOPES"
+
+add_task_env_if_set "MCP_DEV_USER_ID" "$MCP_DEV_USER_ID"
+add_task_env_if_set "MCP_OAUTH_ISSUER_URL" "$MCP_OAUTH_ISSUER_URL"
+add_task_env_if_set "MCP_OAUTH_BRIDGE_URL" "$MCP_OAUTH_BRIDGE_URL"
+add_task_env_if_set "MCP_OAUTH_SCOPES_SUPPORTED" "$MCP_OAUTH_SCOPES_SUPPORTED"
+add_task_env_if_set "MCP_OAUTH_ENABLE_DCR" "$MCP_OAUTH_ENABLE_DCR"
+add_task_env_if_set "MCP_OAUTH_RESOURCE_NAME" "$MCP_OAUTH_RESOURCE_NAME"
+add_task_env_if_set "MCP_OAUTH_COOKIE_DOMAIN" "$MCP_OAUTH_COOKIE_DOMAIN"
+add_task_env_if_set "MCP_OAUTH_COOKIE_SECURE" "$MCP_OAUTH_COOKIE_SECURE"
+add_task_env_if_set "MCP_OAUTH_COOKIE_NAME" "$MCP_OAUTH_COOKIE_NAME"
+add_task_env_if_set "MCP_OAUTH_SESSION_TTL_SECONDS" "$MCP_OAUTH_SESSION_TTL_SECONDS"
+add_task_env_if_set "MCP_OAUTH_AUTH_CODE_TTL_SECONDS" "$MCP_OAUTH_AUTH_CODE_TTL_SECONDS"
+add_task_env_if_set "MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS" "$MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS"
+add_task_env_if_set "MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS" "$MCP_OAUTH_REFRESH_TOKEN_TTL_SECONDS"
 
 case "$ASSIGN_PUBLIC_IP" in
   ENABLED|DISABLED) ;;
@@ -145,6 +234,13 @@ case "$ALB_SCHEME" in
   internet-facing|internal) ;;
   *) die "ALB_SCHEME must be internet-facing or internal." ;;
 esac
+
+if [[ -n "$REQUEST_ACM_CERT_IF_MISSING" ]]; then
+  case "$REQUEST_ACM_CERT_IF_MISSING" in
+    true|false) ;;
+    *) die "REQUEST_ACM_CERT_IF_MISSING must be true or false when set." ;;
+  esac
+fi
 
 if is_true "$ENABLE_ALB"; then
   [[ ${#TARGET_GROUP_NAME} -le 32 ]] || die "TARGET_GROUP_NAME must be 32 characters or fewer."
@@ -283,13 +379,19 @@ ensure_secret() {
 
 ensure_exec_role_secret_access() {
   local role_name="$1"
-  local secret_name="$2"
+  shift
+  local secret_names=("$@")
+
+  [[ ${#secret_names[@]} -gt 0 ]] || die "ensure_exec_role_secret_access requires at least one secret name."
 
   local policy_name="${APP_NAME}-ecs-exec-secret-access-${ENV_NAME}"
   local policy_file
   policy_file="$(mktemp)"
-
-  local secret_arn_pattern="arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:${secret_name}*"
+  local secret_arn_patterns=()
+  local secret_name
+  for secret_name in "${secret_names[@]}"; do
+    secret_arn_patterns+=("\"$(json_escape "arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:${secret_name}*")\"")
+  done
 
   cat >"$policy_file" <<JSON
 {
@@ -302,7 +404,7 @@ ensure_exec_role_secret_access() {
         "secretsmanager:GetSecretValue",
         "secretsmanager:DescribeSecret"
       ],
-      "Resource": "$secret_arn_pattern"
+      "Resource": [$(IFS=,; printf '%s' "${secret_arn_patterns[*]}")]
     },
     {
       "Sid": "AllowDecryptSecretsManager",
@@ -424,6 +526,96 @@ ensure_alb_security_group() {
   echo "$group_id"
 }
 
+find_matching_acm_certificate_arn() {
+  local cert_status="$1"
+  local wildcard_domain=""
+  local cert_arn=""
+
+  if [[ "$MCP_DOMAIN_NAME" == *.* ]]; then
+    wildcard_domain="*.${MCP_DOMAIN_NAME#*.}"
+  fi
+
+  if [[ -n "$wildcard_domain" ]]; then
+    cert_arn="$(aws acm list-certificates \
+      --region "$AWS_REGION" \
+      --certificate-statuses "$cert_status" \
+      --query "CertificateSummaryList[?DomainName==\`$MCP_DOMAIN_NAME\` || DomainName==\`$wildcard_domain\`].CertificateArn | [0]" \
+      --output text 2>/dev/null || true)"
+  else
+    cert_arn="$(aws acm list-certificates \
+      --region "$AWS_REGION" \
+      --certificate-statuses "$cert_status" \
+      --query "CertificateSummaryList[?DomainName==\`$MCP_DOMAIN_NAME\`].CertificateArn | [0]" \
+      --output text 2>/dev/null || true)"
+  fi
+
+  if [[ -n "$cert_arn" && "$cert_arn" != "None" ]]; then
+    echo "$cert_arn"
+  fi
+}
+
+print_acm_dns_validation_records() {
+  local cert_arn="$1"
+  local lines=""
+  local attempt
+
+  for attempt in {1..8}; do
+    lines="$(aws acm describe-certificate \
+      --region "$AWS_REGION" \
+      --certificate-arn "$cert_arn" \
+      --query 'Certificate.DomainValidationOptions[].ResourceRecord.[Name,Type,Value]' \
+      --output text 2>/dev/null || true)"
+
+    if [[ -n "$lines" && "$lines" != "None" ]]; then
+      break
+    fi
+
+    sleep 2
+  done
+
+  if [[ -z "$lines" || "$lines" == "None" ]]; then
+    log "ACM validation records are not available yet."
+    log "Check certificate details with:"
+    log "  aws acm describe-certificate --region $AWS_REGION --certificate-arn $cert_arn"
+    return
+  fi
+
+  log "Add these DNS records to validate the ACM certificate:"
+  while IFS=$'\t' read -r record_name record_type record_value; do
+    [[ -n "$record_name" ]] || continue
+    log "  Name:  $record_name"
+    log "  Type:  $record_type"
+    log "  Value: $record_value"
+  done <<< "$lines"
+}
+
+request_acm_certificate() {
+  local request_domain="$1"
+  local request_token
+  if [[ -n "$ACM_REQUEST_IDEMPOTENCY_TOKEN" ]]; then
+    request_token="$(printf '%s' "$ACM_REQUEST_IDEMPOTENCY_TOKEN" | tr -cd 'a-zA-Z0-9' | cut -c1-32)"
+  else
+    request_token="$(printf 'mcp%s%s' "$(date +%s)" "$RANDOM" | tr -cd 'a-zA-Z0-9' | cut -c1-32)"
+  fi
+  [[ -n "$request_token" ]] || request_token="mcp$(date +%s)"
+
+  local args=(
+    aws acm request-certificate
+    --region "$AWS_REGION"
+    --domain-name "$request_domain"
+    --validation-method DNS
+    --idempotency-token "$request_token"
+  )
+
+  if [[ -n "$ACM_CERT_SAN" ]]; then
+    # shellcheck disable=SC2206
+    local sans=( ${ACM_CERT_SAN//,/ } )
+    args+=(--subject-alternative-names "${sans[@]}")
+  fi
+
+  "${args[@]}" --query 'CertificateArn' --output text
+}
+
 resolve_acm_certificate_arn() {
   if [[ -n "$ACM_CERT_ARN" ]]; then
     echo "$ACM_CERT_ARN"
@@ -435,26 +627,29 @@ resolve_acm_certificate_arn() {
     wildcard_domain="*.${MCP_DOMAIN_NAME#*.}"
   fi
 
-  local cert_arn
-  if [[ -n "$wildcard_domain" ]]; then
-    cert_arn="$(aws acm list-certificates \
-      --region "$AWS_REGION" \
-      --certificate-statuses ISSUED \
-      --query "CertificateSummaryList[?DomainName==\`$MCP_DOMAIN_NAME\` || DomainName==\`$wildcard_domain\`].CertificateArn | [0]" \
-      --output text 2>/dev/null || true)"
-  else
-    cert_arn="$(aws acm list-certificates \
-      --region "$AWS_REGION" \
-      --certificate-statuses ISSUED \
-      --query "CertificateSummaryList[?DomainName==\`$MCP_DOMAIN_NAME\`].CertificateArn | [0]" \
-      --output text 2>/dev/null || true)"
+  local issued_arn
+  issued_arn="$(find_matching_acm_certificate_arn "ISSUED")"
+  if [[ -n "$issued_arn" ]]; then
+    echo "$issued_arn"
+    return
   fi
 
-  if [[ -z "$cert_arn" || "$cert_arn" == "None" ]]; then
-    die "No ISSUED ACM cert found for $MCP_DOMAIN_NAME (or $wildcard_domain) in $AWS_REGION. Set ACM_CERT_ARN explicitly."
+  local pending_arn
+  pending_arn="$(find_matching_acm_certificate_arn "PENDING_VALIDATION")"
+
+  if [[ -z "$pending_arn" ]] && is_true "$REQUEST_ACM_CERT_IF_MISSING"; then
+    [[ -n "$ACM_CERT_DOMAIN" ]] || die "ACM_CERT_DOMAIN is empty. Set ACM_CERT_DOMAIN or MCP_DOMAIN_NAME."
+    log "No ISSUED ACM cert found. Requesting a new DNS-validated ACM certificate for: $ACM_CERT_DOMAIN"
+    pending_arn="$(request_acm_certificate "$ACM_CERT_DOMAIN")"
+    log "Requested ACM certificate ARN: $pending_arn"
   fi
 
-  echo "$cert_arn"
+  if [[ -n "$pending_arn" && "$pending_arn" != "None" ]]; then
+    print_acm_dns_validation_records "$pending_arn"
+    die "ACM certificate is pending validation. Add DNS records, wait until ISSUED, then rerun this script."
+  fi
+
+  die "No ISSUED ACM cert found for $MCP_DOMAIN_NAME (or $wildcard_domain) in $AWS_REGION. Set ACM_CERT_ARN explicitly, or keep REQUEST_ACM_CERT_IF_MISSING=true to auto-request one."
 }
 
 ensure_load_balancer() {
@@ -621,6 +816,160 @@ JSON
   rm -f "$change_file"
 }
 
+write_task_definition_with_jq() {
+  local output_file="$1"
+  local env_json='[]'
+  local secrets_json='[]'
+  local i
+
+  for ((i = 0; i < ${#TASK_ENV_NAMES[@]}; i++)); do
+    env_json="$(jq -cn \
+      --argjson arr "$env_json" \
+      --arg name "${TASK_ENV_NAMES[$i]}" \
+      --arg value "${TASK_ENV_VALUES[$i]}" \
+      '$arr + [{name: $name, value: $value}]')"
+  done
+
+  for ((i = 0; i < ${#TASK_SECRET_NAMES[@]}; i++)); do
+    secrets_json="$(jq -cn \
+      --argjson arr "$secrets_json" \
+      --arg name "${TASK_SECRET_NAMES[$i]}" \
+      --arg valueFrom "${TASK_SECRET_VALUES[$i]}" \
+      '$arr + [{name: $name, valueFrom: $valueFrom}]')"
+  done
+
+  jq -n \
+    --arg family "$TASK_FAMILY" \
+    --arg runtimeCpuArch "$RUNTIME_CPU_ARCH" \
+    --arg cpu "$CPU" \
+    --arg memory "$MEMORY" \
+    --arg executionRoleArn "$EXEC_ROLE_ARN" \
+    --arg taskRoleArn "$TASK_ROLE_ARN" \
+    --arg containerName "$CONTAINER_NAME" \
+    --arg image "$IMAGE_URI" \
+    --arg containerPort "$CONTAINER_PORT" \
+    --arg logGroup "$LOG_GROUP" \
+    --arg awsRegion "$AWS_REGION" \
+    --argjson environment "$env_json" \
+    --argjson secrets "$secrets_json" \
+    '{
+      family: $family,
+      networkMode: "awsvpc",
+      runtimePlatform: {
+        cpuArchitecture: $runtimeCpuArch,
+        operatingSystemFamily: "LINUX"
+      },
+      requiresCompatibilities: ["FARGATE"],
+      cpu: $cpu,
+      memory: $memory,
+      executionRoleArn: $executionRoleArn,
+      taskRoleArn: $taskRoleArn,
+      containerDefinitions: [
+        {
+          name: $containerName,
+          image: $image,
+          essential: true,
+          portMappings: [
+            {
+              containerPort: ($containerPort | tonumber),
+              hostPort: ($containerPort | tonumber),
+              protocol: "tcp"
+            }
+          ],
+          environment: $environment,
+          secrets: $secrets,
+          logConfiguration: {
+            logDriver: "awslogs",
+            options: {
+              "awslogs-group": $logGroup,
+              "awslogs-region": $awsRegion,
+              "awslogs-stream-prefix": $containerName
+            }
+          }
+        }
+      ]
+    }' >"$output_file"
+}
+
+write_task_definition_with_printf() {
+  local output_file="$1"
+  local env_count="${#TASK_ENV_NAMES[@]}"
+  local secret_count="${#TASK_SECRET_NAMES[@]}"
+  local i
+
+  {
+    printf '{\n'
+    printf '  "family": "%s",\n' "$(json_escape "$TASK_FAMILY")"
+    printf '  "networkMode": "awsvpc",\n'
+    printf '  "runtimePlatform": {\n'
+    printf '    "cpuArchitecture": "%s",\n' "$(json_escape "$RUNTIME_CPU_ARCH")"
+    printf '    "operatingSystemFamily": "LINUX"\n'
+    printf '  },\n'
+    printf '  "requiresCompatibilities": ["FARGATE"],\n'
+    printf '  "cpu": "%s",\n' "$(json_escape "$CPU")"
+    printf '  "memory": "%s",\n' "$(json_escape "$MEMORY")"
+    printf '  "executionRoleArn": "%s",\n' "$(json_escape "$EXEC_ROLE_ARN")"
+    printf '  "taskRoleArn": "%s",\n' "$(json_escape "$TASK_ROLE_ARN")"
+    printf '  "containerDefinitions": [\n'
+    printf '    {\n'
+    printf '      "name": "%s",\n' "$(json_escape "$CONTAINER_NAME")"
+    printf '      "image": "%s",\n' "$(json_escape "$IMAGE_URI")"
+    printf '      "essential": true,\n'
+    printf '      "portMappings": [\n'
+    printf '        {\n'
+    printf '          "containerPort": %s,\n' "$CONTAINER_PORT"
+    printf '          "hostPort": %s,\n' "$CONTAINER_PORT"
+    printf '          "protocol": "tcp"\n'
+    printf '        }\n'
+    printf '      ],\n'
+    printf '      "environment": [\n'
+    for ((i = 0; i < env_count; i++)); do
+      printf '        { "name": "%s", "value": "%s" }' \
+        "$(json_escape "${TASK_ENV_NAMES[$i]}")" \
+        "$(json_escape "${TASK_ENV_VALUES[$i]}")"
+      if ((i < env_count - 1)); then
+        printf ','
+      fi
+      printf '\n'
+    done
+    printf '      ],\n'
+    printf '      "secrets": [\n'
+    for ((i = 0; i < secret_count; i++)); do
+      printf '        { "name": "%s", "valueFrom": "%s" }' \
+        "$(json_escape "${TASK_SECRET_NAMES[$i]}")" \
+        "$(json_escape "${TASK_SECRET_VALUES[$i]}")"
+      if ((i < secret_count - 1)); then
+        printf ','
+      fi
+      printf '\n'
+    done
+    printf '      ],\n'
+    printf '      "logConfiguration": {\n'
+    printf '        "logDriver": "awslogs",\n'
+    printf '        "options": {\n'
+    printf '          "awslogs-group": "%s",\n' "$(json_escape "$LOG_GROUP")"
+    printf '          "awslogs-region": "%s",\n' "$(json_escape "$AWS_REGION")"
+    printf '          "awslogs-stream-prefix": "%s"\n' "$(json_escape "$CONTAINER_NAME")"
+    printf '        }\n'
+    printf '      }\n'
+    printf '    }\n'
+    printf '  ]\n'
+    printf '}\n'
+  } >"$output_file"
+}
+
+write_task_definition_file() {
+  local output_file="$1"
+
+  if command -v jq >/dev/null 2>&1; then
+    write_task_definition_with_jq "$output_file"
+    return
+  fi
+
+  log "jq not found; using shell fallback for task-definition JSON generation."
+  write_task_definition_with_printf "$output_file"
+}
+
 TASK_TRUST_FILE="$(mktemp)"
 TASK_DEF_FILE="$(mktemp)"
 cleanup() {
@@ -677,9 +1026,29 @@ aws iam attach-role-policy \
 # IAM role propagation can lag briefly in fresh accounts.
 sleep 10
 
-SECRET_ARN="$(ensure_secret "$SECRET_NAME" "$BEACON_API_TOKEN")"
-log "Ensuring execution role can read secret: $SECRET_NAME"
-ensure_exec_role_secret_access "$EXEC_ROLE_NAME" "$SECRET_NAME"
+BEACON_API_TOKEN_SECRET_ARN="$(ensure_secret "$BEACON_API_TOKEN_SECRET_NAME" "$BEACON_API_TOKEN")"
+add_task_secret "BEACON_API_TOKEN" "$BEACON_API_TOKEN_SECRET_ARN"
+
+SECRET_NAMES_FOR_EXEC_ROLE=("$BEACON_API_TOKEN_SECRET_NAME")
+
+if [[ "$MCP_AUTH_MODE" == "oauth" ]]; then
+  MCP_OAUTH_BRIDGE_SHARED_SECRET_ARN="$(ensure_secret "$MCP_OAUTH_BRIDGE_SHARED_SECRET_NAME" "$MCP_OAUTH_BRIDGE_SHARED_SECRET")"
+  MCP_OAUTH_SESSION_SECRET_ARN="$(ensure_secret "$MCP_OAUTH_SESSION_SECRET_NAME" "$MCP_OAUTH_SESSION_SECRET")"
+  MCP_OAUTH_TOKEN_SECRET_ARN="$(ensure_secret "$MCP_OAUTH_TOKEN_SECRET_NAME" "$MCP_OAUTH_TOKEN_SECRET")"
+
+  add_task_secret "MCP_OAUTH_BRIDGE_SHARED_SECRET" "$MCP_OAUTH_BRIDGE_SHARED_SECRET_ARN"
+  add_task_secret "MCP_OAUTH_SESSION_SECRET" "$MCP_OAUTH_SESSION_SECRET_ARN"
+  add_task_secret "MCP_OAUTH_TOKEN_SECRET" "$MCP_OAUTH_TOKEN_SECRET_ARN"
+
+  SECRET_NAMES_FOR_EXEC_ROLE+=(
+    "$MCP_OAUTH_BRIDGE_SHARED_SECRET_NAME"
+    "$MCP_OAUTH_SESSION_SECRET_NAME"
+    "$MCP_OAUTH_TOKEN_SECRET_NAME"
+  )
+fi
+
+log "Ensuring execution role can read secrets for task startup."
+ensure_exec_role_secret_access "$EXEC_ROLE_NAME" "${SECRET_NAMES_FOR_EXEC_ROLE[@]}"
 
 # Policy propagation can lag briefly in fresh accounts.
 sleep 10
@@ -717,60 +1086,7 @@ else
   fi
 fi
 
-cat >"$TASK_DEF_FILE" <<JSON
-{
-  "family": "$TASK_FAMILY",
-  "networkMode": "awsvpc",
-  "runtimePlatform": {
-    "cpuArchitecture": "$RUNTIME_CPU_ARCH",
-    "operatingSystemFamily": "LINUX"
-  },
-  "requiresCompatibilities": ["FARGATE"],
-  "cpu": "$CPU",
-  "memory": "$MEMORY",
-  "executionRoleArn": "$EXEC_ROLE_ARN",
-  "taskRoleArn": "$TASK_ROLE_ARN",
-  "containerDefinitions": [
-    {
-      "name": "$CONTAINER_NAME",
-      "image": "$IMAGE_URI",
-      "essential": true,
-      "portMappings": [
-        {
-          "containerPort": $CONTAINER_PORT,
-          "hostPort": $CONTAINER_PORT,
-          "protocol": "tcp"
-        }
-      ],
-      "environment": [
-        { "name": "NODE_ENV", "value": "production" },
-        { "name": "MCP_PORT", "value": "$CONTAINER_PORT" },
-        { "name": "MCP_PUBLIC_BASE_URL", "value": "$MCP_PUBLIC_BASE_URL" },
-        { "name": "BEACON_API_URL", "value": "$BEACON_API_URL" },
-        { "name": "MCP_AUTH_MODE", "value": "$MCP_AUTH_MODE" },
-        { "name": "MCP_REQUIRED_SCOPES", "value": "$MCP_REQUIRED_SCOPES" },
-        { "name": "MCP_USER_ID_CLAIM", "value": "$MCP_USER_ID_CLAIM" },
-        { "name": "MCP_OAUTH_ISSUER_URL", "value": "$MCP_OAUTH_ISSUER_URL" },
-        { "name": "MCP_OAUTH_AUTHORIZATION_ENDPOINT", "value": "$MCP_OAUTH_AUTHORIZATION_ENDPOINT" },
-        { "name": "MCP_OAUTH_TOKEN_ENDPOINT", "value": "$MCP_OAUTH_TOKEN_ENDPOINT" },
-        { "name": "MCP_OAUTH_JWKS_URL", "value": "$MCP_OAUTH_JWKS_URL" },
-        { "name": "MCP_OAUTH_SCOPES_SUPPORTED", "value": "$MCP_OAUTH_SCOPES_SUPPORTED" }$MCP_OPTIONAL_ENV_LINES
-      ],
-      "secrets": [
-        { "name": "BEACON_API_TOKEN", "valueFrom": "$SECRET_ARN" }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "$LOG_GROUP",
-          "awslogs-region": "$AWS_REGION",
-          "awslogs-stream-prefix": "$CONTAINER_NAME"
-        }
-      }
-    }
-  ]
-}
-JSON
+write_task_definition_file "$TASK_DEF_FILE"
 
 log "Registering task definition: $TASK_FAMILY"
 TASK_DEF_ARN="$(aws ecs register-task-definition \

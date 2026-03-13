@@ -10,8 +10,8 @@ import { auth } from '@/auth';
 import { AuthProvider } from '@/components/auth-provider';
 
 export const metadata: Metadata = {
-  title: 'Beacon',
-  description: 'Beacon is the social layer for live inquiry in the LLM era.'
+  title: 'Vibecast',
+  description: 'Vibecast is the social layer for live inquiry in the LLM era.'
 };
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <span aria-hidden="true" className="brand-icon">
                   💡
                 </span>
-                Beacon
+                Vibecast
               </Link>
               <div className="nav-links">
                 {isAuthenticated ? (

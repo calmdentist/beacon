@@ -13,12 +13,12 @@ const solutionSteps = [
     description: 'Go deep on an idea in your LLM of choice.'
   },
   {
-    title: 'Beacon it',
-    description: 'Turn the conversation into a clean, structured Beacon.'
+    title: 'Vibecast it',
+    description: 'Turn the conversation into a clean, structured beacon for social discovery.'
   },
   {
     title: 'Discover',
-    description: 'See who else is on the same question or who has the missing perspective.'
+    description: 'See who else is exploring similar/adjacent ideas or who has the missing perspective.'
   }
 ];
 
@@ -33,7 +33,7 @@ const differences = [
   },
   {
     title: 'Better than search',
-    description: 'Beacon helps you find the right minds, not just the right links.'
+    description: 'Vibecast helps you find the right minds, not just the right links.'
   }
 ];
 
@@ -58,17 +58,17 @@ const useCases = [
 
 const faqs = [
   {
-    question: 'Is Beacon another chatbot?',
+    question: 'Is Vibecast another chatbot?',
     answer:
-      'No. Beacon sits on top of your existing LLM workflow and helps you act on the best ideas that come out of it.'
+      'No. Vibecast sits on top of your existing LLM workflow and helps you act on the best ideas that come out of it.'
   },
   {
     question: 'Do I need a big audience?',
-    answer: 'No. Beacon is designed to help you find relevant people even if you have zero followers.'
+    answer: 'No. Vibecast is designed to help you find relevant people even if you have zero followers.'
   },
   {
-    question: 'Does Beacon share all my chats?',
-    answer: 'No. Only the conversations you explicitly Beacon are turned into inquiry objects.'
+    question: 'Does Vibecast share all my chats?',
+    answer: 'No. Only the conversations you explicitly turn into a Beacon are converted into inquiry objects.'
   },
   {
     question: 'Who is this for?',
@@ -86,8 +86,8 @@ export default function HomePage() {
             Turn your LLM rabbit holes into connections
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-[color:var(--ink-muted)] md:text-[1.18rem]">
-            Had an interesting exploration with ChatGPT or Claude? Beacon it, then discover who else is thinking about
-            the same thing or who can help move it forward.
+            Had an interesting exploration with ChatGPT or Claude? Turn it into a Beacon on Vibecast, then discover who
+            else is thinking about the same thing or who can help move it forward.
           </p>
           <div className="hero-cta flex flex-wrap gap-2.5 md:gap-3">
             <Link href="/login" className="button-primary">
@@ -130,10 +130,10 @@ export default function HomePage() {
 
       <section className="space-y-4 md:space-y-5" id="solution">
         <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">
-          Beacon turns live inquiry into discovery
+          Vibecast turns live inquiry into discovery
         </h2>
         <p className="max-w-3xl text-[color:var(--ink-muted)]">
-          When you have a valuable conversation with your LLM, Beacon turns it into a structured inquiry you can save,
+          When you have a valuable conversation with your LLM, Vibecast turns it into a structured Beacon you can save,
           revisit, and optionally open up to matching.
         </p>
         <div className="grid gap-3.5 md:grid-cols-3 md:gap-5">
@@ -211,7 +211,7 @@ export default function HomePage() {
           A missing social primitive
         </h2>
         <p className="max-w-3xl leading-relaxed text-[color:var(--ink-muted)]">
-          For the first time, software understands what you are actively trying to figure out. Beacon is built around
+          For the first time, software understands what you are actively trying to figure out. Vibecast is built around
           that moment: not who you are in general, but what you are exploring right now.
         </p>
         <p className="text-lg font-medium">
@@ -220,12 +220,14 @@ export default function HomePage() {
       </section>
 
       <section className="space-y-4 md:space-y-5" id="how-it-works">
-        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">How Beacon works</h2>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-4xl">How Vibecast works</h2>
         <ol className="grid gap-3.5 md:grid-cols-4 md:gap-5">
           <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">
             1. Have an interesting conversation with your LLM
           </li>
-          <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">2. Click "Beacon this"</li>
+          <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">
+            2. Click "Beacon this"
+          </li>
           <li className="card p-5 text-sm leading-relaxed text-[color:var(--ink-muted)] md:p-6">
             3. Review the generated inquiry
           </li>
@@ -265,7 +267,7 @@ export default function HomePage() {
       <footer className="footer">
         <div className="footer-grid">
           <div>
-            <p className="text-base font-semibold text-[color:var(--ink)]">Beacon</p>
+            <p className="text-base font-semibold text-[color:var(--ink)]">Vibecast</p>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-[color:var(--ink-muted)]">
               Turn live inquiry into connection.
             </p>
@@ -274,7 +276,7 @@ export default function HomePage() {
             <a href="#solution">Product</a>
             <a href="#how-it-works">How it works</a>
             <a href="#faq">FAQ</a>
-            <a href="mailto:founders@usebeacon.ai">Contact</a>
+            <a href="mailto:founders@vibecast.sh">Contact</a>
             <a href="https://x.com" target="_blank" rel="noreferrer">
               X / socials
             </a>
@@ -282,7 +284,7 @@ export default function HomePage() {
             <Link href="/">Terms</Link>
           </div>
         </div>
-        <p className="footer-meta">Beacon</p>
+        <p className="footer-meta">Vibecast</p>
       </footer>
     </main>
   );
